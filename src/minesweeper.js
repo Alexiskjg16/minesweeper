@@ -7,22 +7,65 @@ class Minesweeper extends Component {
         super(props);
         this.state = {
             game: {
-                board: []
+                board: [],
+                level: 0
             }
         }
     }
-    componentDidMount() {
-        fetch(BASE_URL + "games", {
+    createGame() {
+        fetch(`${BASE_URL}games`, {
             method: "POST",
-            body: JSON.stringify({ difficulty: 1 })
-        }).then(resp => resp.json())
+            body: JSON.stringify({ difficulty: this.state.level }),
+            headers: {
+                'Content-Type': 'application/json'
+            }
+        })
+            .then(resp => resp.json())
             .then(newGame => {
-                console.log("game", newGame);
+                console.log(newGame)
                 this.setState({
                     game: newGame
                 })
             })
     }
+    componentDidMount() {
+        this.createGame()
+    }
+
+    checkTheAPI = (action, row, col) => {
+        fetch(`${BASE_URL}games/${this.state.game.id}/${action}`, {
+            method: "POST",
+            body: JSON.stringify({ row: row, col: col }),
+            headers: {
+                'Content-Type': 'application/json'
+            }
+        })
+            .then(resp => resp.json())
+            .then(newGameState => {
+                this.setState({
+                    game: newGameState,
+                }, () => {
+                    this.props.updateMessage(this.state.game.state)
+                })
+            })
+    }
+    handleCellClick = (row, col) => {
+        if (this.state.game.state !== "youLost" && this.state.game.state !== "youWon") {
+           this.checkTheAPI("check", row, col)
+        }
+
+    }
+
+    handleFlaggedCell = (event, row, col) => {
+        event.preventDefault()
+        this.checkTheAPI("flag", row, col)
+
+    }
+
+    resetEvent = () => {
+        this.createGame()
+    }
+
 
     render () {
         return(
@@ -33,14 +76,23 @@ class Minesweeper extends Component {
                 console.log(row, "row", i)
                 return (
                     <div>
-                        {row.map((col, j) => {
-                            return <span className = "square">
-                            {this.state.name.board[i][j]}
-                            is at
-                                {`${i}, ${j}`}
-                                </span>
-                   })}
-                   </div>
+                     <table>
+                      <tbody>
+                        {this.state.game.board.map((row, i) => {
+                            return <tr key={i}>{
+                                row.map((col, j) => {
+                                    return <td
+                                        key={j}
+                                        className="cell"
+                                        onClick={() => this.handleCellClick(i, j)}
+                                        onContextMenu={(event) => this.handleFlaggedCell(event, i, j)}
+                                    >{this.state.game.board[i][j]}</td>
+                                })
+                            }</tr>
+                        })}
+                       </tbody>
+                      </table>
+                     </div>
                )
                return
            })}
