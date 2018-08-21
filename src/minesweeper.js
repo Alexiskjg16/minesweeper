@@ -81,12 +81,13 @@ class Minesweeper extends Component {
                         {this.state.game.board.map((row, i) => {
                             return <tr key={i}>{
                                 row.map((col, j) => {
-                                    return <td
-                                        key={j}
+                                    return 
+                                    <td  key={j}
                                         className="cell"
                                         onClick={() => this.handleCellClick(i, j)}
                                         onContextMenu={(event) => this.handleFlaggedCell(event, i, j)}
-                                    >{this.state.game.board[i][j]}</td>
+                                    >{this.state.game.board[i][j]}
+                                    </td>
                                 })
                             }</tr>
                         })}
@@ -94,7 +95,6 @@ class Minesweeper extends Component {
                       </table>
                      </div>
                )
-               return
            })}
        </div>
    );
