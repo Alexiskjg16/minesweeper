@@ -71,31 +71,25 @@ class Minesweeper extends Component {
         return(
             <div>
                 Currently Playing: {this.state.game.id}
-
-            {this.state.game.board.map((row, i) => {
-                console.log(row, "row", i)
-                return (
-                    <div>
-                     <table>
-                      <tbody>
-                        {this.state.game.board.map((row, i) => {
-                            return <tr key={i}>{
-                                row.map((col, j) => {
-                                    return 
-                                    <td  key={j}
-                                        className="cell"
-                                        onClick={() => this.handleCellClick(i, j)}
-                                        onContextMenu={(event) => this.handleFlaggedCell(event, i, j)}
-                                    >{this.state.game.board[i][j]}
-                                    </td>
-                                })
-                            }</tr>
-                        })}
-                       </tbody>
-                      </table>
-                     </div>
-               )
-           })}
+                
+                <div>
+                    <table>
+                    <tbody>
+                    {this.state.game.board.map((row, i) => {
+                        return (
+                            <tr key={i}>
+                                {row.map((col, j) => {
+                                    return (
+                                        <td key={j}>{j}</td>
+                                    )
+                                })}
+                            </tr>
+                        )
+                    })}
+                    </tbody>
+                    </table>
+                    </div>
+           )
        </div>
    );
 }
