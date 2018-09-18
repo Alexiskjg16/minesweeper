@@ -1,98 +1,150 @@
 import React, { Component } from 'react';
 
-const BASE_URL = 'https://minesweeper-api.herokuapp.com/'
+const BoardURL = 'https://minesweeper-api.herokuapp.com'
 
 class Minesweeper extends Component {
     constructor(props) {
         super(props);
         this.state = {
-            game: {
-                board: [],
-                level: 0
-            }
+            game: { board: [] },
+            // gameId: '',
+            level: 0,
+            results: 'Start Playing!'
         }
     }
+
     createGame() {
-        fetch(`${BASE_URL}games`, {
+        fetch(`${BoardURL}/games/`, {
             method: "POST",
             body: JSON.stringify({ difficulty: this.state.level }),
             headers: {
-                'Content-Type': 'application/json'
+                "Content-Type": "application/json"
             }
         })
             .then(resp => resp.json())
             .then(newGame => {
-                console.log(newGame)
+                this.setState({
+                    game: newGame,
+                    gameId: newGame.id,
+                })
+            })
+    }
+
+    componentDidMount() {
+        this.createGame()
+    }
+
+    resetEvent = () => {
+        this.createGame()
+        this.setState({
+            results: "Start Playing!"
+        })
+    }
+
+    renderCells = (row, column) => {
+        if (this.state.game.board[row][column] === "_") {
+            return "◻️"
+        }
+        else if (this.state.game.board[row][column] === "F") {
+            return "🚩"
+        }
+        else if (this.state.game.board[row][column] === "*") {
+            return "💣"
+        }
+        else {
+            return this.state.game.board[row][column]
+        }
+    }
+
+    displayGameResult() {
+        if (this.state.game.state === "lost") {
+            this.setState({
+                results: "You've Lost!"
+            })
+        }
+        else if (this.state.game.state === "won") {
+            this.setState({
+                results: "Hey You Won!"
+            })
+        }
+        else {
+            this.setState({
+                results: ""
+            })
+        }
+    }
+
+    clickedSquare = (row, column) => {
+        if (!(this.state.game.state === "lost" || this.state.game.state === "won")) {
+            fetch(`${BoardURL}/games/${this.state.gameId}/check`, {
+                method: "POST",
+                headers: {
+                    "Content-Type": "application/json",
+                },
+                body: JSON.stringify({
+                    "row": row,
+                    "col": column
+                })
+            })
+                .then(resp => resp.json())
+                .then(newGame => {
+                    this.setState({
+                        game: newGame
+                    })
+                    this.displayGameResult()
+                })
+        }
+    }
+
+    flaggedSquare = (e, row, column) => {
+        e.preventDefault()
+        fetch(`${BoardURL}/games/${this.state.gameId}/flag`, {
+            method: "POST",
+            headers: {
+                "Content-Type": "application/json"
+            },
+            body: JSON.stringify({
+                "row": row,
+                "col": column
+            })
+        })
+            .then(resp => resp.json())
+            .then(newGame => {
                 this.setState({
                     game: newGame
                 })
             })
     }
-    componentDidMount() {
-        this.createGame()
-    }
-
-    checkTheAPI = (action, row, col) => {
-        fetch(`${BASE_URL}games/${this.state.game.id}/${action}`, {
-            method: "POST",
-            body: JSON.stringify({ row: row, col: col }),
-            headers: {
-                'Content-Type': 'application/json'
-            }
-        })
-            .then(resp => resp.json())
-            .then(newGameState => {
-                this.setState({
-                    game: newGameState,
-                }, () => {
-                    this.props.updateMessage(this.state.game.state)
-                })
-            })
-    }
-    handleCellClick = (row, col) => {
-        if (this.state.game.state !== "youLost" && this.state.game.state !== "youWon") {
-           this.checkTheAPI("check", row, col)
-        }
-
-    }
-
-    handleFlaggedCell = (event, row, col) => {
-        event.preventDefault()
-        this.checkTheAPI("flag", row, col)
-
-    }
-
-    resetEvent = () => {
-        this.createGame()
-    }
 
 
-    render () {
-        return(
-            <div>
-                Currently Playing: {this.state.game.id}
-                
+
+    render() {
+        return (
+            <div className='Result'>{this.state.results}
                 <div>
-                    <table>
-                    <tbody>
+                    <button className='Restart-Button' onClick={this.resetEvent}>Restart Game?</button>
+                </div>
+                <div className='Board'>
                     {this.state.game.board.map((row, i) => {
                         return (
-                            <tr key={i}>
+                            <div key={i} className='row square'>
                                 {row.map((col, j) => {
                                     return (
-                                        <td key={j}>{j}</td>
+                                        <span key={j}
+                                            className='column square'
+                                            onClick={() => this.clickedSquare(i, j)}
+                                            onContextMenu={(e) => this.flaggedSquare(e, i, j)}>
+                                            {this.renderCells(i, j)}
+                                        </span>
                                     )
                                 })}
-                            </tr>
+                            </div>
                         )
                     })}
-                    </tbody>
-                    </table>
-                    </div>
-           )
-       </div>
-   );
-}
+                </div>
+            </div>
+        )
+    }
 }
 
-export default Minesweeper;
+export default Minesweeper

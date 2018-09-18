@@ -1,31 +1,19 @@
 import React, { Component } from 'react';
+import './App.css';
 import Minesweeper from './minesweeper';
 
 class App extends Component {
-
-  displayGameResult = (state) => {
-    if (state === "youLost") {
-        this.setState({
-            message: "Oh No, You Lose"
-        })
-    } else if (state === "youWon") {
-        this.setState({
-            message: "Oh Yeah, You Win!"
-        })
-    } else {
-        this.setState({
-            message: "S'..."
-        })
-    }
-}
-
   render() {
     return (
       <div className="App">
-        <Minesweeper/>
+        <header className="App-header">
+          <h1 className="App-title">It's Minesweeper!</h1>
+        </header>
+        <Minesweeper />
       </div>
     );
   }
 }
 
 export default App;
+
